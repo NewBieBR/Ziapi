@@ -18,6 +18,11 @@ class Pipeline : public ziapi::IPipeline {
     ~Pipeline() = default;
 
   public:
+    // Server's configurations are not handled in this example
+    bool configure(const ziapi::Config &) final {
+        return true;
+    }
+
     void handleRequest(const ziapi::Request &req) final {
         // Create a default response
         ziapi::Response res = {"HTTP/1.1",
@@ -69,7 +74,8 @@ class ExampleModule : public ziapi::IModule,
     ~ExampleModule() = default;
 
   public:
-    bool start(ziapi::IPipeline *pipeline) final {
+    // Server's configurations are not handled in this example
+    bool start(ziapi::IPipeline *pipeline, const ziapi::Config &) final {
         // Add self to the Pipeline
         return pipeline->hook(shared_from_this());
     }
@@ -93,7 +99,7 @@ int main() {
     // In this example we'll use a fake request
     ziapi::Request fakeRequest = {"OPTIONS", "*", "HTTP/1.1"};
 
-    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline));
+    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline), {});
 
     pipeline->handleRequest(fakeRequest);
     return 0;

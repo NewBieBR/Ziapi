@@ -25,20 +25,24 @@ class Pipeline : public ziapi::IPipeline {
     ~Pipeline() = default;
 
   public:
+    // Server's configurations are not handled in this example
+    bool configure(const ziapi::Config &) final {
+        return true;
+    }
     void handleRequest(const ziapi::Request &req) final {
         // Create a default response
         ziapi::Response res = {"HTTP/1.1",
-                                  501,
-                                  "Request not handled",
-                                  {{"Server", "Zia/1.0"},
-                                   {"Content-Type", "text/html"},
-                                   {"Connection", "keep-alive"},
-                                   {"Location", "localhost"}}};
+                               501,
+                               "Request not handled",
+                               {{"Server", "Zia/1.0"},
+                                {"Content-Type", "text/html"},
+                                {"Connection", "keep-alive"},
+                                {"Location", "localhost"}}};
 
         // Call the Pipeline's modules start with REALLY_FIRST ones to
         // REALLY_LAST ones in order to handle the request
-        for (int hookType = ziapi::REALLY_FIRST;
-             hookType <= ziapi::REALLY_LAST; ++hookType)
+        for (int hookType = ziapi::REALLY_FIRST; hookType <= ziapi::REALLY_LAST;
+             ++hookType)
             for (auto &it : _modules[static_cast<ziapi::HookType>(hookType)])
                 it->handleRequest(req, res);
     }
@@ -67,7 +71,8 @@ class ExampleModule : public ziapi::IModule,
     ~ExampleModule() = default;
 
   public:
-    bool start(ziapi::IPipeline *pipeline) final {
+    // Server's configurations are not handled in this example
+    bool start(ziapi::IPipeline *pipeline, const ziapi::Config &) final {
         // Add self to the Pipeline
         return pipeline->hook(shared_from_this(), ziapi::HookType::FIRST);
     }
@@ -76,8 +81,7 @@ class ExampleModule : public ziapi::IModule,
         return true;
     };
 
-    void handleRequest(const ziapi::Request &req,
-                       ziapi::Response &res) final {
+    void handleRequest(const ziapi::Request &req, ziapi::Response &res) final {
         res.status = 200;
         res.reason = "ExampleModule received the request";
         res.body = "<h2>Your Method: " + req.method + "</h2>\n";
@@ -94,18 +98,17 @@ class PrintResponseModule
     ~PrintResponseModule() = default;
 
   public:
-    bool start(ziapi::IPipeline *pipeline) final {
+    // Server's configurations are not handled in this example
+    bool start(ziapi::IPipeline *pipeline, const ziapi::Config &) final {
         // Add self to the Pipeline, this module will be called after everthing
-        return pipeline->hook(shared_from_this(),
-                              ziapi::HookType::REALLY_LAST);
+        return pipeline->hook(shared_from_this(), ziapi::HookType::REALLY_LAST);
     }
 
     bool stop() final {
         return true;
     };
 
-    void handleRequest(const ziapi::Request &req,
-                       ziapi::Response &res) final {
+    void handleRequest(const ziapi::Request &req, ziapi::Response &res) final {
         // Print out the response
         std::cout << res.version << " " << res.status << " " << res.reason
                   << std::endl;
@@ -123,8 +126,8 @@ int main() {
     // In this example we'll use a fake request
     ziapi::Request fakeRequest = {"OPTIONS", "*", "HTTP/1.1"};
 
-    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline));
-    printResponseModule->start(static_cast<ziapi::IPipeline *>(pipeline));
+    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline), {});
+    printResponseModule->start(static_cast<ziapi::IPipeline *>(pipeline), {});
 
     pipeline->handleRequest(fakeRequest);
     return 0;
