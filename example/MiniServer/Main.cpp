@@ -1,4 +1,3 @@
-#include "IModule.hpp"
 #include <iostream>
 #include <vector>
 #include <unordered_map>
@@ -11,6 +10,7 @@
 #include <netinet/in.h>
 #include <sstream>
 #include <fstream>
+#include "IModule.hpp"
 
 /**
  * In this example, we will:
@@ -25,6 +25,11 @@
 // The client socket file descriptor
 int newsockfd;
 
+static void error(const char *msg) {
+    perror(msg);
+    exit(1);
+}
+
 /**
  * Pipeline class
  * implements IPipeline functions
@@ -37,6 +42,11 @@ class Pipeline : public ziapi::IPipeline {
     ~Pipeline() = default;
 
   public:
+    // Server's configurations are not handled in this example
+    bool configure(const ziapi::Config &) final {
+        return true;
+    }
+
     void handleRequest(const ziapi::Request &req) final {
         // Create a default response
         ziapi::Response res = {"HTTP/1.1",
@@ -92,7 +102,8 @@ class ExampleModule : public ziapi::IModule,
     ~ExampleModule() = default;
 
   public:
-    bool start(ziapi::IPipeline *pipeline) final {
+    // Server's configurations are not handled in this example
+    bool start(ziapi::IPipeline *pipeline, const ziapi::Config &) final {
         // Add self to the Pipeline
         return pipeline->hook(shared_from_this(), ziapi::HookType::FIRST);
     }
@@ -102,18 +113,16 @@ class ExampleModule : public ziapi::IModule,
     };
 
     void handleRequest(const ziapi::Request &req, ziapi::Response &res) final {
+        // Set response's status to OK
         res.status = 200;
+        // Read index.html file content
         std::ifstream ifs("index.html");
         std::string content((std::istreambuf_iterator<char>(ifs)),
                             (std::istreambuf_iterator<char>()));
+        // Set the response's body to index.html's content
         res.body = content;
     }
 };
-
-static void error(const char *msg) {
-    perror(msg);
-    exit(1);
-}
 
 static int launchServer() {
     int sockfd, portno;
@@ -161,12 +170,12 @@ int main() {
     char buffer[256];
 
     sockfd = launchServer();
-    newsockfd = acceptClient(sockfd, buffer);
+    acceptClient(sockfd, buffer);
     // Print client's request
     std::cout << buffer << std::endl;
     std::string rawRequest(buffer);
     auto request = createRequest(rawRequest);
-    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline));
+    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline), {});
     pipeline->handleRequest(request);
     while (1)
         ;

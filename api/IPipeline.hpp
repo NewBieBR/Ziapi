@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <unordered_map>
 #include "Request.hpp"
 
 namespace ziapi {
@@ -10,7 +11,7 @@ namespace ziapi {
     class IModule;
 
     /**
-     * Hook is used to defined Modules calling order
+     * Hook is used to defined Modules' calling order
      * REALLY_FIRST will be called before anything
      * FIRST will be called first
      * MIDDLE should be used by Modules that don't care when they are called
@@ -25,6 +26,8 @@ namespace ziapi {
         REALLY_LAST,
     };
 
+    using Config = std::unordered_map<std::string, std::string>;
+
     /**
      * The Pipeline is the processing line that
      * inputs HTTP requests and outputs corresponding responses
@@ -36,6 +39,11 @@ namespace ziapi {
         ~IPipeline() = default;
 
       public:
+        /**
+         * This function should configure the Pipeline
+         */
+        virtual bool configure(const Config &) = 0;
+
         /**
          * Receive a http request
          * This function should initialize a default Response

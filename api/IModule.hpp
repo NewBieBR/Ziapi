@@ -10,7 +10,7 @@ namespace ziapi {
          * The module should register a hook type in this function
          * Cf IPipeline.hpp for more informations about hook
          */
-        virtual bool start(IPipeline *) = 0;
+        virtual bool start(IPipeline *, const Config &) = 0;
 
         virtual bool stop() = 0;
 
