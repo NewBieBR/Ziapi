@@ -35,7 +35,7 @@ namespace ziapi {
      */
     class IPipeline {
       public:
-        virtual ~IPipeline() = 0;
+        virtual ~IPipeline() = default;
 
       public:
         /**
