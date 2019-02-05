@@ -77,7 +77,7 @@ class ExampleModule : public ziapi::IModule,
     // Server's configurations are not handled in this example
     bool start(ziapi::IPipeline *pipeline, const ziapi::Config &) final {
         // Add self to the Pipeline
-        return pipeline->hook(shared_from_this());
+        return pipeline->hook(std::shared_ptr<ExampleModule>(this));
     }
 
     bool stop() final {
@@ -99,7 +99,7 @@ int main() {
     // In this example we'll use a fake request
     ziapi::Request fakeRequest = {"OPTIONS", "*", "HTTP/1.1"};
 
-    exampleModule->start(static_cast<ziapi::IPipeline *>(pipeline), {});
+    exampleModule->start(pipeline, {});
 
     pipeline->handleRequest(fakeRequest);
     return 0;
