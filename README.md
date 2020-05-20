@@ -1,8 +1,6 @@
 # Ziapi
 
-This is a simple Zia' API.
-
-[Concept explanation](https://epitechfr-my.sharepoint.com/:p:/g/personal/hung_dao-nguyen_epitech_eu/EWejVtEkfnZOiK3fuA-CgXUBHt6llvYk7p-UqMZK3GCmCw?e=G488Ll)
+Nginx-inspired web server module API
 
 ### To create a module
 ```cpp
